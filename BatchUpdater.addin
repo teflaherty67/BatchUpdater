@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Text>BatchUpdater - Command 1</Text>
+    <Description>Some description</Description>
+    <Assembly>BatchUpdater\BatchUpdater.dll</Assembly>
+    <FullClassName>BatchUpdater.Command1</FullClassName>
+    <ClientId>7917ca5a-05f2-4e7d-9327-b3c3358cf5b1</ClientId>
+    <VendorId>com.YOUR COMPANY NAME</VendorId>
+    <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
+  </AddIn>
+  <AddIn Type="Command">
+    <Text>BatchUpdater - Command 2</Text>
+    <Description>Some description</Description>
+    <Assembly>BatchUpdater\BatchUpdater.dll</Assembly>
+    <FullClassName>BatchUpdater.Command2</FullClassName>
+    <ClientId>fb6fba21-d842-4826-a4ed-d633db6ab5f6</ClientId>
+    <VendorId>com.YOUR COMPANY NAME</VendorId>
+    <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
+  </AddIn>
+  <AddIn Type="Application">
+    <Name>BatchUpdater</Name>
+    <Assembly>BatchUpdater\BatchUpdater.dll</Assembly>
+    <FullClassName>BatchUpdater.App</FullClassName>
+    <ClientId>ff095ac7-bc3c-4295-82d2-cd61fab530c0</ClientId>
+    <VendorId>com.YOUR COMPANY NAME</VendorId>
+    <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
+  </AddIn>
+</RevitAddIns>
