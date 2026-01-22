@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatchUpdater"
         mc:Ignorable="d"
-        Title="Batch Update Revit Files" Height="260" Width="400" MinWidth="300" MinHeight="240"
+        Title="Batch Update Revit Files" Height="225" Width="400" MinWidth="300" MinHeight="220"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize">    
     

@@ -1,7 +1,7 @@
 ﻿namespace BatchUpdater
 {
     [Transaction(TransactionMode.Manual)]
-    public class Command1 : IExternalCommand
+    public class cmdBatchUpdate : IExternalCommand
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
