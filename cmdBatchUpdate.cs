@@ -10,9 +10,25 @@
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            // Your code goes here
+            try
+            {
+                frmBatchUpdate form = new frmBatchUpdate(uiapp);
+                bool? result = form.ShowDialog();
 
-            return Result.Succeeded;
+                if (result == true)
+                {
+                    return Result.Succeeded;
+                }
+                else
+                {
+                    return Result.Cancelled;
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+                return Result.Failed;
+            }
         }
         internal static PushButtonData GetButtonData()
         {
