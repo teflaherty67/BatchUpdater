@@ -102,7 +102,13 @@ namespace BatchUpdater
             // Get all Revit files
             SearchOption searchOption = includeSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-            string[] rvtFiles = Directory.GetFiles(sourceFolder, "*.rvt", searchOption);
+            // Get all file types
+            List<string> allFiles = new List<string>();
+            allFiles.AddRange(Directory.GetFiles(sourceFolder, "*.rvt", searchOption));
+            allFiles.AddRange(Directory.GetFiles(sourceFolder, "*.rfa", searchOption));
+            allFiles.AddRange(Directory.GetFiles(sourceFolder, "*.rte", searchOption));
+
+            string[] rvtFiles = allFiles.ToArray();
 
             if (rvtFiles.Length == 0)
             {
