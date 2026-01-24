@@ -1,0 +1,40 @@
+﻿<Window x:Class="BatchUpdater.frmDeleteBackups"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BatchUpdater"
+        mc:Ignorable="d"
+                Title="Delete Revit Backup Files" Height="190" Width="400" MinWidth="300" MinHeight="180">
+    <Border Margin="10">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0*"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="Select Folder to Clean:" Grid.ColumnSpan="2"/>
+            <Grid Grid.Row="1" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="tbxFolder" Grid.Column="0" Height="25"/>
+                <Button x:Name="btnSelect" Width="90" Content="Select.." Grid.Column="1" Height="25" Margin="5,2,5,0" VerticalAlignment="Top" Click="btnSelect_Click"/>
+            </Grid>
+            <CheckBox x:Name="cbxSubFolders" Grid.Row="2" Content="Clean Subfolders" VerticalAlignment="Center" IsChecked="True" Grid.ColumnSpan="2"/>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.ColumnSpan="2">
+                <Button x:Name="btnOK" Grid.Row="3" Content="OK" Width="90" Height="30" Margin="0,0,10,0" Click="btnOK_Click"/>
+                <Button x:Name="btnCancel" Grid.Row="3" Content="Cancel" Width="90" Height="30" Click="btnCancel_Click"/>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+
+</Window>
+

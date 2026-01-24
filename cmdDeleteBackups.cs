@@ -1,7 +1,7 @@
 ﻿namespace BatchUpdater
 {
     [Transaction(TransactionMode.Manual)]
-    public class Command2 : IExternalCommand
+    public class cmdDeleteBackups : IExternalCommand
     {
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -10,11 +10,27 @@
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Document doc = uidoc.Document;
 
-            // Your code goes here
+            try
+            {
+                frmDeleteBackups form = new frmDeleteBackups();
+                bool? result = form.ShowDialog();
 
-
-            return Result.Succeeded;
+                if (result == true)
+                {
+                    return Result.Succeeded;
+                }
+                else
+                {
+                    return Result.Cancelled;
+                }
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+                return Result.Failed;
+            }
         }
+
         internal static PushButtonData GetButtonData()
         {
             // use this method to define the properties for this command in the Revit ribbon
@@ -32,5 +48,4 @@
             return myButtonData.Data;
         }
     }
-
 }
