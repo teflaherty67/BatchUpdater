@@ -13,7 +13,7 @@
     <Text>BatchUpdater - Command 2</Text>
     <Description>Some description</Description>
     <Assembly>BatchUpdater\BatchUpdater.dll</Assembly>
-    <FullClassName>BatchUpdater.Command2</FullClassName>
+    <FullClassName>BatchUpdater.cmdDeleteBackups</FullClassName>
     <ClientId>fb6fba21-d842-4826-a4ed-d633db6ab5f6</ClientId>
     <VendorId>com.YOUR COMPANY NAME</VendorId>
     <VendorDescription>YOUR COMPANY NAME, YOUR COMPANY URL</VendorDescription>
