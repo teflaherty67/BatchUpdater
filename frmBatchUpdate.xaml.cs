@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MessageBox = System.Windows.MessageBox;
-using Path = System.IO.Path;
 
 namespace BatchUpdater
 {
