@@ -131,4 +131,3 @@ namespace BatchUpdater.Progress_Bar
         }
     }
 }
-

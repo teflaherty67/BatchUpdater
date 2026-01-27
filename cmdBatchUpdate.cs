@@ -1,4 +1,5 @@
-﻿using BatchUpdater.Progress_Bar;
+﻿using BatchUpdater.Common;
+using BatchUpdater.Progress_Bar;
 
 namespace BatchUpdater
 {
@@ -51,7 +52,7 @@ namespace BatchUpdater
 
             if (rvtFiles.Length == 0)
             {
-                TaskDialog.Show("Information", "No Revit files found in the source folder.");
+                Utils.TaskDialogInformation("No Files", "Batch Update", "No Revit files found in the source folder.");
                 return;
             }
 
@@ -73,15 +74,15 @@ namespace BatchUpdater
                     if (progressHelper.IsCancelled())
                     {
                         progressHelper.CloseProgress();
-                        TaskDialog.Show("Cancelled", "Operation cancelled by user.");
+                        Utils.TaskDialogInformation("Cancelled", "Batch Update", "Operation cancelled by user.");
                         return;
                     }
 
                     try
                     {
-                        // Update progress
+                        // Update progress FIRST
                         string fileName = Path.GetFileName(sourceFile);
-                        progressHelper.UpdateProgress(i + 1, $"Processing: {fileName}");
+                        progressHelper.UpdateProgress(i + 1, $"Upgrading: {fileName}");
 
                         // Calculate relative path from source folder
                         string relativePath = GetRelativePath(sourceFolder, sourceFile);
@@ -123,9 +124,7 @@ namespace BatchUpdater
             }
 
             // Show results
-            TaskDialog tdResults = new TaskDialog("Processing Complete");
-            tdResults.MainInstruction = $"Processing complete!";
-            tdResults.MainContent = $"Successful: {successCount}\nFailed: {failCount}";
+            string resultMessage = $"Successful: {successCount}\nFailed: {failCount}";
 
             if (failedFiles.Count > 0)
             {
@@ -134,10 +133,20 @@ namespace BatchUpdater
                 {
                     failedList += $"\n... and {failedFiles.Count - 10} more";
                 }
-                tdResults.ExpandedContent = $"Failed files:\n{failedList}";
-            }
 
-            tdResults.Show();
+                TaskDialog tdResults = new TaskDialog("Processing Complete");
+                tdResults.MainIcon = Icon.TaskDialogIconInformation;
+                tdResults.Title = "Batch Update";
+                tdResults.TitleAutoPrefix = false;
+                tdResults.MainContent = resultMessage;
+                tdResults.ExpandedContent = $"Failed files:\n{failedList}";
+                tdResults.CommonButtons = TaskDialogCommonButtons.Close;
+                tdResults.Show();
+            }
+            else
+            {
+                Utils.TaskDialogInformation("Complete", "Batch Update", resultMessage);
+            }
         }
 
         private string GetRelativePath(string fromPath, string toPath)

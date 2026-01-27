@@ -37,6 +37,7 @@ namespace BatchUpdater
             {
                 dialog.Description = "Select Source Folder";
                 dialog.ShowNewFolderButton = false;
+                dialog.SelectedPath = @"S:\Shared Folders\Lifestyle USA Design";
 
                 if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
