@@ -64,56 +64,84 @@ namespace BatchUpdater
             int failCount = 0;
             List<string> failedFiles = new List<string>();
 
+            bool userCancelled = false;
+
             try
             {
                 for (int i = 0; i < rvtFiles.Length; i++)
                 {
                     string sourceFile = rvtFiles[i];
+                    string fileName = Path.GetFileName(sourceFile);
 
                     // Check for user cancellation
                     if (progressHelper.IsCancelled())
                     {
-                        progressHelper.CloseProgress();
-                        Utils.TaskDialogInformation("Cancelled", "Batch Update", "Operation cancelled by user.");
-                        return;
+                        userCancelled = true;
+                        break; // let finally close the progress window cleanly
                     }
+
+                    // Show "working on" message WITHOUT advancing the bar yet
+                    progressHelper.UpdateProgress(i, $"Opening: {fileName}");
+
+                    // Calculate relative path from source folder
+                    string relativePath = GetRelativePath(sourceFolder, sourceFile);
+                    string targetFile = Path.Combine(targetFolder, relativePath);
+
+                    // Create target directory if it doesn't exist
+                    string targetDir = Path.GetDirectoryName(targetFile);
+                    if (!Directory.Exists(targetDir))
+                    {
+                        Directory.CreateDirectory(targetDir);
+                    }
+
+                    Document openedDoc = null;
 
                     try
                     {
-                        // Update progress FIRST
-                        string fileName = Path.GetFileName(sourceFile);
-                        progressHelper.UpdateProgress(i + 1, $"Upgrading: {fileName}");
+                        // Open the Revit file
+                        openedDoc = uiApp.Application.OpenDocumentFile(sourceFile);
 
-                        // Calculate relative path from source folder
-                        string relativePath = GetRelativePath(sourceFolder, sourceFile);
-                        string targetFile = Path.Combine(targetFolder, relativePath);
-
-                        // Create target directory if it doesn't exist
-                        string targetDir = Path.GetDirectoryName(targetFile);
-                        if (!Directory.Exists(targetDir))
+                        if (openedDoc == null)
                         {
-                            Directory.CreateDirectory(targetDir);
+                            failCount++;
+                            failedFiles.Add($"{fileName}: OpenDocumentFile returned null");
+                            progressHelper.UpdateProgress(i + 1, $"Failed: {fileName}");
+                            continue;
                         }
 
-                        // Open and save the Revit file
-                        Document doc = uiApp.Application.OpenDocumentFile(sourceFile);
-
-                        if (doc != null)
+                        // Save to target location
+                        SaveAsOptions saveOptions = new SaveAsOptions
                         {
-                            // Save to target location
-                            SaveAsOptions saveOptions = new SaveAsOptions();
-                            saveOptions.OverwriteExistingFile = true;
+                            OverwriteExistingFile = true
+                        };
 
-                            doc.SaveAs(targetFile, saveOptions);
-                            doc.Close(false);
+                        progressHelper.UpdateProgress(i, $"Upgrading: {fileName}");
+                        openedDoc.SaveAs(targetFile, saveOptions);
 
-                            successCount++;
-                        }
+                        // Close (no save needed because we just SaveAs)
+                        openedDoc.Close(false);
+                        openedDoc = null;
+
+                        // NOW advance the bar (completed one file)
+                        progressHelper.UpdateProgress(i + 1, $"Upgraded: {fileName}");
+
+                        successCount++;
                     }
                     catch (Exception ex)
                     {
                         failCount++;
-                        failedFiles.Add($"{Path.GetFileName(sourceFile)}: {ex.Message}");
+                        failedFiles.Add($"{fileName}: {ex.Message}");
+
+                        // Advance the bar even on failure so it doesn't look stuck
+                        progressHelper.UpdateProgress(i + 1, $"Failed: {fileName}");
+                    }
+                    finally
+                    {
+                        // Ensure the file is not left open if something failed mid-stream
+                        if (openedDoc != null)
+                        {
+                            try { openedDoc.Close(false); } catch { /* ignore */ }
+                        }
                     }
                 }
             }
@@ -123,8 +151,14 @@ namespace BatchUpdater
                 progressHelper.CloseProgress();
             }
 
+            if (userCancelled)
+            {
+                Utils.TaskDialogInformation("Cancelled", "Batch Update", "Operation cancelled by user.");
+                return;
+            }
+
             // Show results
-            string resultMessage = $"Successful: {successCount}\nFailed: {failCount}";
+            string resultMessage = $"Upgraded: {successCount}\nFailed: {failCount}";
 
             if (failedFiles.Count > 0)
             {

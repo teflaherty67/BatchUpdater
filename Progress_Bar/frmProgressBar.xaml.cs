@@ -43,91 +43,117 @@ namespace BatchUpdater.Progress_Bar
     public class ProgressBarHelper
     {
         private frmProgressBar _progressBar;
+        private System.Windows.Threading.Dispatcher _uiDispatcher;
+        private Thread _uiThread;
 
-        // Show your existing progress window
+        private readonly ManualResetEventSlim _windowReady = new ManualResetEventSlim(false);
+
+        // thread-safe cancel flag
+        private volatile bool _cancelled;
+
         public void ShowProgress(int totalOperations)
         {
-            if (_progressBar == null)
+            _cancelled = false;
+
+            // If already running, just reset values on the UI thread
+            if (_uiDispatcher != null && _progressBar != null)
             {
-                // Create your WPF window only if it doesn't exist
+                _uiDispatcher.BeginInvoke(new Action(() =>
+                {
+                    _progressBar.Total = totalOperations;
+                    _progressBar.pbProgress.Minimum = 0;
+                    _progressBar.pbProgress.Maximum = totalOperations;
+                    _progressBar.pbProgress.Value = 0;
+                    _progressBar.lblText.Text = $"Updating 0 of {totalOperations} files";
+                    _progressBar.CancelFlag = false;
+                }));
+                return;
+            }
+
+            _windowReady.Reset();
+
+            _uiThread = new Thread(() =>
+            {
+                // Create a Dispatcher for this thread
+                _uiDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+
                 _progressBar = new frmProgressBar(totalOperations);
-                // Make the window a child of Revit's main window
+
+                // When user clicks cancel, propagate to helper flag too
+                _progressBar.Closed += (_, __) =>
+                {
+                    try { System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Background); }
+                    catch { /* ignore */ }
+                };
+
+                // hook into your existing CancelFlag
+                _progressBar.btnCancel.Click += (_, __) => _cancelled = true;
+
+                // Owner = Revit main window (optional; keep if you want)
                 var mainWindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
                 var helper = new System.Windows.Interop.WindowInteropHelper(_progressBar);
                 helper.Owner = mainWindowHandle;
-                // Show the window
+
                 _progressBar.Show();
-            }
-            else
-            {
-                // Reset the existing window for new phase
-                _progressBar.Total = totalOperations;
-                _progressBar.pbProgress.Maximum = totalOperations;
-                _progressBar.pbProgress.Value = 0;
-                _progressBar.lblText.Text = $"Updating 0 of {totalOperations} elements";
-                _progressBar.CancelFlag = false; // Reset cancel flag for new phase
-            }
+
+                _windowReady.Set();
+
+                // Start message loop for this UI thread
+                System.Windows.Threading.Dispatcher.Run();
+            });
+
+            _uiThread.IsBackground = true;
+            _uiThread.SetApartmentState(ApartmentState.STA);
+            _uiThread.Start();
+
+            // Wait until the window is created before returning
+            _windowReady.Wait();
         }
 
-        // Update the progress
         public void UpdateProgress(int currentOperation, string message = null)
         {
-            if (_progressBar == null)
-                return;
+            if (_uiDispatcher == null || _progressBar == null) return;
 
-            // Update progress bar value
-            _progressBar.pbProgress.Value = currentOperation;
+            _uiDispatcher.BeginInvoke(new Action(() =>
+            {
+                _progressBar.pbProgress.Value = currentOperation;
 
-            // Update status text if present
-            if (message != null && _progressBar.lblText != null)
-                _progressBar.lblText.Text = message;
-            else
-                _progressBar.lblText.Text = $"Updating {currentOperation} of {_progressBar.Total} elements";
-
-            // Process any pending UI operations to ensure window is fully rendered
-            // This prevents the window from appearing blank initially
-            DoEvents();
+                if (!string.IsNullOrWhiteSpace(message))
+                    _progressBar.lblText.Text = message;
+                else
+                    _progressBar.lblText.Text = $"Updating {currentOperation} of {_progressBar.Total} files";
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
-        // Close the progress window
         public void CloseProgress()
         {
-            if (_progressBar != null)
+            if (_uiDispatcher == null || _progressBar == null) return;
+
+            try
             {
-                _progressBar.Close();
+                _uiDispatcher.Invoke(new Action(() =>
+                {
+                    if (_progressBar.IsVisible)
+                        _progressBar.Close();
+                }));
+            }
+            catch
+            {
+                // ignore shutdown races
+            }
+            finally
+            {
                 _progressBar = null;
+                _uiDispatcher = null;
+                _uiThread = null;
             }
         }
 
         public bool IsCancelled()
         {
+            // Use either your original CancelFlag or our volatile flag
+            if (_cancelled) return true;
             return _progressBar?.CancelFlag ?? false;
-        }
-
-        // Helper method to process UI events
-        private void DoEvents()
-        {
-            // Create a new temporary message processing loop (DispatcherFrame)
-            // This frame will run until we explicitly tell it to stop
-            DispatcherFrame frame = new DispatcherFrame();
-
-            // Schedule a low-priority callback that will terminate the temporary loop
-            // Background priority ensures UI updates happen before this callback executes
-            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,
-                new DispatcherOperationCallback(ExitFrame), frame);
-
-            // Start processing messages in this temporary loop
-            // This call blocks until the frame's Continue property is set to false
-            // During this time, UI events are processed, allowing the display to update
-            Dispatcher.PushFrame(frame);
-        }
-
-        private object ExitFrame(object frame)
-        {
-            // Set the Continue property to false, which will cause PushFrame to return
-            // This terminates the temporary message loop created in DoEvents
-            ((DispatcherFrame)frame).Continue = false;
-            return null;
         }
     }
 }
