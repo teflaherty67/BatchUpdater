@@ -43,29 +43,32 @@ namespace BatchUpdater.Progress_Bar
     public class ProgressBarHelper
     {
         private frmProgressBar _progressBar;
-        private System.Windows.Threading.Dispatcher _uiDispatcher;
+        private Dispatcher _uiDispatcher;
         private Thread _uiThread;
 
         private readonly ManualResetEventSlim _windowReady = new ManualResetEventSlim(false);
-
-        // thread-safe cancel flag
+        private volatile bool _closing;
         private volatile bool _cancelled;
 
         public void ShowProgress(int totalOperations)
         {
             _cancelled = false;
+            _closing = false;
 
-            // If already running, just reset values on the UI thread
+            // If already running, just reset
             if (_uiDispatcher != null && _progressBar != null)
             {
+                var pb = _progressBar;
                 _uiDispatcher.BeginInvoke(new Action(() =>
                 {
-                    _progressBar.Total = totalOperations;
-                    _progressBar.pbProgress.Minimum = 0;
-                    _progressBar.pbProgress.Maximum = totalOperations;
-                    _progressBar.pbProgress.Value = 0;
-                    _progressBar.lblText.Text = $"Updating 0 of {totalOperations} files";
-                    _progressBar.CancelFlag = false;
+                    if (_closing || pb == null) return;
+
+                    pb.Total = totalOperations;
+                    pb.pbProgress.Minimum = 0;
+                    pb.pbProgress.Maximum = totalOperations;
+                    pb.pbProgress.Value = 0;
+                    pb.lblText.Text = $"Updating 0 of {totalOperations} files";
+                    pb.CancelFlag = false;
                 }));
                 return;
             }
@@ -74,73 +77,89 @@ namespace BatchUpdater.Progress_Bar
 
             _uiThread = new Thread(() =>
             {
-                // Create a Dispatcher for this thread
-                _uiDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+                _uiDispatcher = Dispatcher.CurrentDispatcher;
 
                 _progressBar = new frmProgressBar(totalOperations);
 
-                // When user clicks cancel, propagate to helper flag too
+                // Tie cancel button to helper flag (keep your existing CancelFlag too)
+                _progressBar.btnCancel.Click += (_, __) => _cancelled = true;
+
+                // If user closes the window, treat as closing
                 _progressBar.Closed += (_, __) =>
                 {
-                    try { System.Windows.Threading.Dispatcher.CurrentDispatcher.BeginInvokeShutdown(System.Windows.Threading.DispatcherPriority.Background); }
+                    _closing = true;
+                    try { Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background); }
                     catch { /* ignore */ }
                 };
 
-                // hook into your existing CancelFlag
-                _progressBar.btnCancel.Click += (_, __) => _cancelled = true;
-
-                // Owner = Revit main window (optional; keep if you want)
+                // Owner = Revit main window (optional)
                 var mainWindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
                 var helper = new System.Windows.Interop.WindowInteropHelper(_progressBar);
                 helper.Owner = mainWindowHandle;
 
                 _progressBar.Show();
-
                 _windowReady.Set();
 
-                // Start message loop for this UI thread
-                System.Windows.Threading.Dispatcher.Run();
+                Dispatcher.Run();
             });
 
             _uiThread.IsBackground = true;
             _uiThread.SetApartmentState(ApartmentState.STA);
             _uiThread.Start();
 
-            // Wait until the window is created before returning
             _windowReady.Wait();
         }
 
         public void UpdateProgress(int currentOperation, string message = null)
         {
-            if (_uiDispatcher == null || _progressBar == null) return;
+            // capture locals to prevent race with CloseProgress()
+            var disp = _uiDispatcher;
+            var pb = _progressBar;
 
-            _uiDispatcher.BeginInvoke(new Action(() =>
+            if (_closing || disp == null || pb == null) return;
+
+            disp.BeginInvoke(new Action(() =>
             {
-                _progressBar.pbProgress.Value = currentOperation;
+                // re-check inside callback too
+                if (_closing || pb == null) return;
+                if (!pb.IsVisible) return;
+
+                pb.pbProgress.Value = currentOperation;
 
                 if (!string.IsNullOrWhiteSpace(message))
-                    _progressBar.lblText.Text = message;
+                    pb.lblText.Text = message;
                 else
-                    _progressBar.lblText.Text = $"Updating {currentOperation} of {_progressBar.Total} files";
-            }), System.Windows.Threading.DispatcherPriority.Background);
+                    pb.lblText.Text = $"Updating {currentOperation} of {pb.Total} files";
+
+            }), DispatcherPriority.Background);
         }
 
         public void CloseProgress()
         {
-            if (_uiDispatcher == null || _progressBar == null) return;
+            var disp = _uiDispatcher;
+            var pb = _progressBar;
+
+            if (disp == null || pb == null) return;
+
+            _closing = true;
 
             try
             {
-                _uiDispatcher.Invoke(new Action(() =>
+                // Close on UI thread
+                disp.BeginInvoke(new Action(() =>
                 {
-                    if (_progressBar.IsVisible)
-                        _progressBar.Close();
-                }));
+                    try
+                    {
+                        if (pb.IsVisible)
+                            pb.Close();
+                    }
+                    catch { /* ignore */ }
+                }), DispatcherPriority.Send);
+
+                // Shutdown dispatcher loop
+                disp.BeginInvokeShutdown(DispatcherPriority.Background);
             }
-            catch
-            {
-                // ignore shutdown races
-            }
+            catch { /* ignore */ }
             finally
             {
                 _progressBar = null;
@@ -151,7 +170,6 @@ namespace BatchUpdater.Progress_Bar
 
         public bool IsCancelled()
         {
-            // Use either your original CancelFlag or our volatile flag
             if (_cancelled) return true;
             return _progressBar?.CancelFlag ?? false;
         }
