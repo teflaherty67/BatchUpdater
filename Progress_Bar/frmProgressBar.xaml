@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatchUpdater.Progress_Bar"
         mc:Ignorable="d"
-                Title="Progress" Height="175" Width="300">
+        Title="Progress" Height="175" Width="300">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>

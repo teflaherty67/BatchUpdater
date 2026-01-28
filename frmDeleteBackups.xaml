@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatchUpdater"
         mc:Ignorable="d"
-        Title="Delete Revit Backup Files" 
+        Title="Delete Backup Files" 
         Height="200" 
         Width="400" 
         MinWidth="300" 
