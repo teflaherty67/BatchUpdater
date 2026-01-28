@@ -5,55 +5,204 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatchUpdater"
         mc:Ignorable="d"
-        Title="Batch Update Revit Files" Height="225" Width="400" MinWidth="300" MinHeight="220"
+        Title="Batch Update" 
+        Height="250" 
+        Width="400" 
+        MinWidth="300" 
+        MinHeight="250"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanResize">    
-    
-    <Border Margin="10">
+        ResizeMode="CanResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
 
-        <!-- Grid Definition -->
+    <Window.Resources>
+        <!-- Button Style -->
+        <Style x:Key="StyledButton" TargetType="Button">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#D1D5DB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" 
+            CornerRadius="8" 
+            BorderBrush="#9CA3AF" 
+            BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Source Folder -->
-            <Label Grid.Row="0" Content="Select Source Folder:"/>
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="100"/>
-                </Grid.ColumnDefinitions>
-                <TextBox x:Name="tbxFolder" Grid.Column="0" Height="25"/>
-                <Button x:Name="btnSelect" Width="90" Content="Select.." Grid.Column="1" Height="25" Margin="5,2,5,0" VerticalAlignment="Top" Click="btnSelect_Click"/>
-            </Grid>
+            <!-- Title Bar -->
+            <Border Grid.Row="0" 
+        Background="#708090"
+        CornerRadius="8,8,0,0"
+        BorderBrush="#E5E7EB"
+        BorderThickness="0,0,0,1">
+                <Grid>
+                    <TextBlock Text="Batch Update Revit Files" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="#1F2937"
+                               VerticalAlignment="Center"
+                               Margin="15,0,0,0"/>
+                    <Button Content="×" 
+                            Width="30" 
+                            Height="30"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,5,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="20"
+                            Foreground="#6B7280"
+                            Cursor="Hand"
+                            Click="btnCancel_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="3">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E5E7EB"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
 
-            <!-- Target Folder -->
-            <Label Grid.Row="2" Content="Select Target Folder:"/>
-            <Grid Grid.Row="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="100"/>
-                </Grid.ColumnDefinitions>
-                <TextBox x:Name="tbxTargetFolder" Grid.Column="0" Height="25"/>
-                <Button x:Name="btnTargetSelect" Width="90" Content="Select.." Grid.Column="1" Height="25" Margin="5,2,5,0" VerticalAlignment="Top" Click="btnTargetSelect_Click"/>
-            </Grid>
+            <!-- Content Area -->
+            <Border Grid.Row="1" Margin="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-            <!-- Subfolders -->
-            <CheckBox x:Name="cbxSubFolders" Grid.Row="4" Content="Include Subfolders" VerticalAlignment="Center" IsChecked="True"/>
+                    <!-- Source Folder -->
+                    <Label Grid.Row="0" Content="Select Source Folder:" FontSize="11"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="tbxFolder" 
+                                 Grid.Column="0" 
+                                 Height="25"
+                                 VerticalContentAlignment="Center"
+                                 Padding="5,0"
+                                 FontSize="11"/>
+                        <Button x:Name="btnSelect" 
+                                Width="90" 
+                                Content="Select.." 
+                                Grid.Column="1" 
+                                Height="25" 
+                                Margin="5,0,0,0" 
+                                VerticalAlignment="Center" 
+                                Click="btnSelect_Click"
+                                Style="{StaticResource StyledButton}"/>
+                    </Grid>
 
-            <!-- Button Panel -->
-            <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-                <Button x:Name="btnOK" Content="OK" Width="90" Height="30" Margin="0,0,10,0" Click="btnOK_Click"/>
-                <Button x:Name="btnCancel" Content="Cancel" Width="90" Height="30" Margin="0,0,10,0" Click="btnCancel_Click"/>
-                <Button x:Name="btnHelp" Content="Help" Width="90" Height="30" Click="btnHelp_Click"/>
-            </StackPanel>
-            
+                    <!-- Target Folder -->
+                    <Label Grid.Row="2" Content="Select Target Folder:" FontSize="11"/>
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="tbxTargetFolder" 
+                                 Grid.Column="0" 
+                                 Height="25"
+                                 VerticalContentAlignment="Center"
+                                 Padding="5,0"
+                                 FontSize="11"/>
+                        <Button x:Name="btnTargetSelect" 
+                                Width="90" 
+                                Content="Select.." 
+                                Grid.Column="1" 
+                                Height="25" 
+                                Margin="5,0,0,0" 
+                                VerticalAlignment="Center" 
+                                Click="btnTargetSelect_Click"
+                                Style="{StaticResource StyledButton}"/>
+                    </Grid>
+
+                    <!-- Subfolders -->
+                    <CheckBox x:Name="cbxSubFolders" 
+                              Grid.Row="4" 
+                              Content="Include Subfolders" 
+                              VerticalAlignment="Center" 
+                              IsChecked="True"
+                              FontSize="11"/>
+
+                    <!-- Button Panel -->
+                    <StackPanel Grid.Row="5" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Bottom">
+                        <Button x:Name="btnOK" 
+                                Content="OK" 
+                                Width="90" 
+                                Height="30" 
+                                Margin="0,0,10,0" 
+                                Click="btnOK_Click"
+                                Style="{StaticResource StyledButton}"/>
+                        <Button x:Name="btnCancel2" 
+                                Content="Cancel" 
+                                Width="90" 
+                                Height="30" 
+                                Margin="0,0,10,0" 
+                                Click="btnCancel_Click"
+                                Style="{StaticResource StyledButton}"/>
+                        <Button x:Name="btnHelp" 
+                                Content="Help" 
+                                Width="90" 
+                                Height="30" 
+                                Click="btnHelp_Click"
+                                Style="{StaticResource StyledButton}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
 </Window>

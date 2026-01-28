@@ -60,57 +60,30 @@ namespace BatchUpdater
                 return;
             }
 
-            // Initialize progress bar
-            ProgressBarHelper progressHelper = new ProgressBarHelper();
-            progressHelper.ShowProgress(files.Length);
-
-            try
+            // Loop through the files
+            foreach (string file in files)
             {
-                // Loop through the files
-                for (int i = 0; i < files.Length; i++)
+                // Check if the file is a Revit file
+                string extension = Path.GetExtension(file);
+                if (extension == ".rvt" || extension == ".rfa" || extension == ".rte")
                 {
-                    string file = files[i];
-
-                    // Check for user cancellation
-                    if (progressHelper.IsCancelled())
+                    // Get the last 9 characters of file name to check if backup
+                    if (file.Length >= 9)
                     {
-                        progressHelper.CloseProgress();
-                        Utils.TaskDialogInformation("Cancelled", "Delete Backups", "Operation cancelled by user.");
-                        return;
-                    }
-
-                    // Update progress
-                    string fileName = Path.GetFileName(file);
-                    progressHelper.UpdateProgress(i + 1, $"Checking: {fileName}");
-
-                    // Check if the file is a Revit file
-                    string extension = Path.GetExtension(file);
-                    if (extension == ".rvt" || extension == ".rfa" || extension == ".rte")
-                    {
-                        // Get the last 9 characters of file name to check if backup
-                        if (file.Length >= 9)
+                        string checkString = file.Substring(file.Length - 9, 9);
+                        if (checkString.Contains(".0"))
                         {
-                            string checkString = file.Substring(file.Length - 9, 9);
-                            if (checkString.Contains(".0"))
-                            {
-                                // Add filename to list
-                                deletedFileLog.Add(file);
+                            // Add filename to list
+                            deletedFileLog.Add(file);
 
-                                // Delete the file
-                                File.Delete(file);
+                            // Delete the file
+                            File.Delete(file);
 
-                                // Increment the counter
-                                counter++;
-                            }
+                            // Increment the counter
+                            counter++;
                         }
                     }
                 }
-            }
-
-            finally
-            {
-                // Always close progress bar
-                progressHelper.CloseProgress();
             }
 
             // Output log file if files were deleted
@@ -139,7 +112,6 @@ namespace BatchUpdater
                     Process.Start(psi);
                 }
             }
-
             else
             {
                 Utils.TaskDialogInformation("Complete", "Delete Backups", "No backup files found.");

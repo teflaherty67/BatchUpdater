@@ -5,36 +5,175 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BatchUpdater"
         mc:Ignorable="d"
-                Title="Delete Revit Backup Files" Height="190" Width="400" MinWidth="300" MinHeight="180">
-    <Border Margin="10">
+        Title="Delete Revit Backup Files" 
+        Height="200" 
+        Width="400" 
+        MinWidth="300" 
+        MinHeight="200"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+        <!-- Button Style -->
+        <Style x:Key="StyledButton" TargetType="Button">
+            <Setter Property="Background" Value="#E5E7EB"/>
+            <Setter Property="BorderBrush" Value="#9CA3AF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#D1D5DB"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#9CA3AF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" 
+            CornerRadius="8" 
+            BorderBrush="#9CA3AF" 
+            BorderThickness="1">
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0*"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" Content="Select Folder to Clean:" Grid.ColumnSpan="2"/>
-            <Grid Grid.Row="1" Grid.ColumnSpan="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="100"/>
-                </Grid.ColumnDefinitions>
-                <TextBox x:Name="tbxFolder" Grid.Column="0" Height="25"/>
-                <Button x:Name="btnSelect" Width="90" Content="Select.." Grid.Column="1" Height="25" Margin="5,2,5,0" VerticalAlignment="Top" Click="btnSelect_Click"/>
-            </Grid>
-            <CheckBox x:Name="cbxSubFolders" Grid.Row="2" Content="Clean Subfolders" VerticalAlignment="Center" IsChecked="True" Grid.ColumnSpan="2"/>
-            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.ColumnSpan="2">
-                <Button x:Name="btnOK" Grid.Row="3" Content="OK" Width="90" Height="30" Margin="0,0,10,0" Click="btnOK_Click"/>
-                <Button x:Name="btnCancel" Grid.Row="3" Content="Cancel" Width="90" Height="30" Click="btnCancel_Click"/>
-            </StackPanel>
 
+            <!-- Title Bar -->
+            <Border Grid.Row="0"
+                    Background="#F5F5DC"
+                    CornerRadius="8,8,0,0"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="0,0,0,1">
+                <Grid>
+                    <TextBlock Text="Delete Revit Backup Files" 
+                               FontSize="14" 
+                               FontWeight="SemiBold"
+                               Foreground="#1F2937"
+                               VerticalAlignment="Center"
+                               Margin="15,0,0,0"/>
+                    <Button Content="×" 
+                            Width="30" 
+                            Height="30"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,5,0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="20"
+                            Foreground="#6B7280"
+                            Cursor="Hand"
+                            Click="btnCancel_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="3">
+                                                <ContentPresenter HorizontalAlignment="Center" 
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#E5E7EB"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content Area -->
+            <Border Grid.Row="1" Margin="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Content="Select Folder to Clean:" FontSize="11"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="tbxFolder" 
+                                 Grid.Column="0" 
+                                 Height="25"
+                                 VerticalContentAlignment="Center"
+                                 Padding="5,0"
+                                 FontSize="11"/>
+                        <Button x:Name="btnSelect" 
+                                Width="90" 
+                                Content="Select.." 
+                                Grid.Column="1" 
+                                Height="25" 
+                                Margin="5,0,0,0" 
+                                VerticalAlignment="Center" 
+                                Click="btnSelect_Click"
+                                Style="{StaticResource StyledButton}"/>
+                    </Grid>
+
+                    <CheckBox x:Name="cbxSubFolders" 
+                              Grid.Row="2" 
+                              Content="Clean Subfolders" 
+                              VerticalAlignment="Center" 
+                              IsChecked="True"
+                              FontSize="11"/>
+
+                    <StackPanel Grid.Row="3" 
+                                Orientation="Horizontal" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Bottom">
+                        <Button x:Name="btnOK" 
+                                Content="OK" 
+                                Width="90" 
+                                Height="30" 
+                                Margin="0,0,10,0" 
+                                Click="btnOK_Click"
+                                Style="{StaticResource StyledButton}"/>
+                        <Button x:Name="btnCancel2" 
+                                Content="Cancel" 
+                                Width="90" 
+                                Height="30" 
+                                Margin="0,0,10,0" 
+                                Click="btnCancel_Click"
+                                Style="{StaticResource StyledButton}"/>
+                        <Button x:Name="btnHelp" 
+                                Content="Help" 
+                                Width="90" 
+                                Height="30" 
+                                Click="btnHelp_Click"
+                                Style="{StaticResource StyledButton}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
         </Grid>
     </Border>
-
 </Window>
-
