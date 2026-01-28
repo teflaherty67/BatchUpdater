@@ -131,7 +131,12 @@ namespace BatchUpdater
 
                 if (tdResult == TaskDialogResult.CommandLink1)
                 {
-                    Process.Start(logPath);
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = logPath,
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
                 }
             }
 
